@@ -2,10 +2,12 @@
 
 import sys
 import cv2
+
+from register_face import capture_new_face
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QMessageBox, QHBoxLayout
+    QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QMessageBox, QHBoxLayout, QInputDialog
 )
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -76,7 +78,14 @@ class MainWindow(QMainWindow):
             self.image_label.setPixmap(pixmap)    
 
     def add_new_face(self):
-        QMessageBox.information(self, "Nouvel utilisateur", "Ajout d’un nouveau visage... (à venir)")
+        name, ok = QInputDialog.getText(self,"Ajouter un visage","Entrer le nom de la personne :")
+        if ok and name:
+            success = capture_new_face(name)
+            if success:
+                QMessageBox.information(self,"Succés",f"le visage de {name} a été enregistré avec succés.")
+            else:
+                QMessageBox.critical(self,"Erreur")
+
 
     def view_logs(self):
         QMessageBox.information(self, "Logs", "Affichage des logs... (à venir)")
