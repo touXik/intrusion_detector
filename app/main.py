@@ -1,4 +1,7 @@
 # app/main.py
+from face_recognition1 import load_known_faces, recognize_faces_in_frame
+import datetime
+import os
 
 import sys
 import cv2
@@ -57,6 +60,7 @@ class MainWindow(QMainWindow):
     def start_surveillance(self):
         if not self.capture:
             self.capture = cv2.VideoCapture(0)
+            self.known_encodings, self.known_names = load_known_faces()
             self.timer.start(30)
             QMessageBox.information(self,"Surveillance", "Webcam activée ✅")
         else:
@@ -70,10 +74,24 @@ class MainWindow(QMainWindow):
     def update_frame(self):
         ret, frame = self.capture.read()
         if ret:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            height, width, channel = frame.shape
+            recognized_faces = recognize_faces_in_frame(frame, self.known_encodings, self.known_names)
+
+            for name , (top, right, bottom, left) in recognized_faces : 
+                color = (0, 255, 0) if name != "Inconnu" else (0, 0, 255)
+                cv2.rectangle(frame, (left, top), (right, bottom), color, 2)
+                cv2.putText(frame, name, (left, top - 10),cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
+
+                # sauvgarder limage si inconnu 
+                if name == "Inconnu" :
+                    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                    os.makedirs("app/logs/detections", exist_ok=True)
+                    cv2.imwrite(f"app/logs/detections/intrus_{timestamp}.jpg", frame)
+            
+            # affichage 
+            rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            height, width, channel = rgb.shape
             bytes_per_line = 3 * width
-            q_image = QImage(frame.data, width, height, bytes_per_line, QImage.Format_RGB888)
+            q_image = QImage(rgb, width, height, bytes_per_line, QImage.Format_RGB888)
             pixmap = QPixmap.fromImage(q_image)
             self.image_label.setPixmap(pixmap)    
 
