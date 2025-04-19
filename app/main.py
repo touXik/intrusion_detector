@@ -2,6 +2,7 @@
 from face_recognition1 import load_known_faces, recognize_faces_in_frame
 import datetime
 import os
+from logs_window import LogsWindow
 
 import sys
 import cv2
@@ -106,7 +107,9 @@ class MainWindow(QMainWindow):
 
 
     def view_logs(self):
-        QMessageBox.information(self, "Logs", "Affichage des logs... (à venir)")
+        self.logs_window = LogsWindow()
+        self.logs_window.show()
+
 
 # Point d’entrée
 if __name__ == "__main__":
